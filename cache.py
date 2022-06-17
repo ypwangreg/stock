@@ -13,7 +13,7 @@ if use_cache:
   session = CachedSession(
     'demo_cache',                      # ~/.cache/demo_cache.sqlite
     use_cache_dir=True,                # Save files in the default user cache dir
-    cache_control=False,                # Use Cache-Control headers for expiration, if available
+    cache_control=True,                # Use Cache-Control headers for expiration, if available
                                        #    some website, have 'Cache-Control': 'private, max-age=0'
     expire_after=timedelta(days=1),    # Otherwise expire responses after one day
     allowable_methods=['GET', 'POST'], # Cache POST requests to avoid sending the same data twice
@@ -30,6 +30,8 @@ session.headers.update({'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; Win64; x64; 
 def get(url):
   return session.get(url)
 
+def clear():
+  return  session.cache.clear()
 
 if __name__ == '__main__':
   for i in range(60):

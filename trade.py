@@ -5,6 +5,7 @@ def tradingtime(tm = None):
   if tm.hour < 9 or tm.hour > 16 : return False
   if tm.weekday() > 4: return False
   if tm.hour == 9 and tm.minute < 30: return False
+  if tm.hour == 16 and tm.minute > 10: return False
   # TODO. extra check for holiday..? /API
   return "{:02d}:{:02d}".format(tm.hour, tm.minute)
 

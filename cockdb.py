@@ -72,14 +72,22 @@ def close():
     connection.close()
     
 # ('AAPL-1655072301.603004', '06/12/2022 18:18:21 | This is another test')
-def save(tick, msg):
+def save(tick, msg, wait=True):
     from datetime import datetime
     tm = str(datetime.now().timestamp())
     nowstr = datetime.now().strftime("%m/%d/%Y %H:%M:%S |")
     #statement = "INSERT INTO stocks (message) VALUES ('" + nowstr+ msg + "')"
     statement = "INSERT INTO stocks VALUES ('" + tick+"-"+ tm +"','"+ nowstr+" "+ msg + "')"
     exec_statement(statement)
-    sleep(0.2)
+    if wait: sleep(0.2)
+def savetm(tick, msg, now, wait=True):
+    #from datetime import datetime
+    tm = str(now.timestamp())
+    nowstr = now.strftime("%m/%d/%Y %H:%M:%S |")
+    #statement = "INSERT INTO stocks (message) VALUES ('" + nowstr+ msg + "')"
+    statement = "INSERT INTO stocks VALUES ('" + tick+"-"+ tm +"','"+ nowstr+" "+ msg + "')"
+    exec_statement(statement)
+    if wait: sleep(0.2)
 """
 if random > 0 then it will return the <random> number of records. it is useful for a large table.
 Do not use "order by" as it will scan the full tables and then sort which takes long in large table.
@@ -91,5 +99,5 @@ def show(random=0):
 
 if __name__ == "__main__":
     #init() # run only once 
-    save("AAPL", "This is another test")
-    show(0)
+    #save("AAPL", "This is another test")
+    show(100)

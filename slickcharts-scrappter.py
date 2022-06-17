@@ -2,7 +2,9 @@ import cache
 from bs4 import BeautifulSoup
 import random
 from time import sleep
-from cockdb import save, show
+from cockdb import save, savetm, show
+from datetime import datetime
+from trade import tradingtime
 
 link_found = 0
 link_visit = 0
@@ -26,7 +28,7 @@ def scrapeWikiArticle(url, level):
     return
   
   soup = BeautifulSoup(response.content, 'html.parser')
- 
+  #save('SP500', str(response.content))  # can not process the ! in <!doctype.. 
    
   #title = soup.find(id="firstHeading")
   #if title == None: 
@@ -40,10 +42,22 @@ def scrapeWikiArticle(url, level):
   linkToScrape = 0
   
   link_found += len(allLinks)
-  print("Rows: ", link_found)
+  print("Total Rows: ", link_found)
   level += 1
+  now = datetime.now()
   for link in allLinks:
-    print(link)
+    #print(link)
+    cols = link.find_all('td')
+    if len(cols) == 0: continue
+    cols = [ele.text.strip().replace('?','') for ele in cols]
+    #print('|'.join(cols))
+    cols_fmt = str(cols).replace("'", '"')
+    if len(cols) == 4: 
+      savetm(cols[0], cols_fmt, now)
+      print(cols[0], cols_fmt)
+    else:
+      savetm(cols[2], cols_fmt, now)
+      print(cols[2], cols_fmt)
     continue
 
     if link.get('href') == None: continue
@@ -87,6 +101,8 @@ def scrapeWikiArticle(url, level):
 
 
   #scrapeWikiArticle("https://en.wikipedia.org" + linkToScrape['href'], level)
-
-
-scrapeWikiArticle("https://www.slickcharts.com/sp500", 0)
+while True:
+  if tradingtime() == False: 
+    sleep(60)
+  else:
+    scrapeWikiArticle("https://www.slickcharts.com/sp500", 0)
