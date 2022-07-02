@@ -110,6 +110,7 @@ def parse_option_json(content, cont=True, dayindex=0):
   print(exp[0], ms, tick, cap, avgv, tradex,'times')
   day45 = day45fromexp(exp)
   print("day45", ts2Ymd(day45, 1), exp.index(day45))
+  return
  
   for i,x in enumerate(exp):
     load_exp_date(tick, i, x)
@@ -155,5 +156,5 @@ if __name__ == '__main__':
   # load the file from tsla which is created by test.py 
   with open('tsla') as f:
     content = f.read()
-    parse_option_json(content)
-    #filter_option_json(content)
+    #parse_option_json(content)
+    filter_option_json(content)
