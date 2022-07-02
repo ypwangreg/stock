@@ -97,7 +97,14 @@ def show(random=0):
     if random > 0: statement = "select * from stocks where random() < 0.01 limit " + str(random) +";"
     fetchall_statement(statement)
 
+def showid(tick, random=0):
+    statement = "SELECT * FROM stocks where id like '" + tick +"-%'"
+    if random > 0: statement += " and random() < 0.01 limit " + str(random)
+    statement += ";"
+    fetchall_statement(statement)
+
 if __name__ == "__main__":
     #init() # run only once 
     #save("AAPL", "This is another test")
-    show(100)
+    #show(100)
+    showid("TSLA", 100)
