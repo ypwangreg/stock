@@ -158,6 +158,7 @@ def filter_option_json(content):
   avgv =  jo['optionChain']['result'][0]['quote']['averageDailyVolume3Month'] #  > 4999999  - about 5M
   # SP500, 32T in total (2022.7). Avg Cap: 15B. so min 5M shares per day ,1B shares per year-> avg price 50. daily 3% 
   tradex = int(bid*avgv/cap *2200)  #  yearly trading exchange 
+  tradeB = bid*avgv/1000000000 #  daily trading price in B 
   # {:>5} - string, 5 chars and right-aligned, also str.rjust(5) will do it
   # {:7.2f} - floating, total 7 chars with 2 decimal. not integer length is 7 but total length
   # {:3d} - integer,  totla 3 chars
@@ -165,7 +166,7 @@ def filter_option_json(content):
   avgvM = avgv/1000000
   ret = ""
   if avgvM > 10.0 and tradex > 10 :
-    ret = "{} {} {:>5} {:7.2f}B {:6.2f}M {:6.2f} {:3d} times".format(exp[0], ms, tick, capB, avgvM, bid, tradex)
+    ret = "{} {} {:>5} {:7.2f}B {:6.2f}M {:6.2f} {:3d} times {:7.2f}B".format(exp[0], ms, tick, capB, avgvM, bid, tradex, tradeB)
     #print(ret)
   day45 = day45fromexp(exp)
   print("day45", ts2Ymd(day45, 1), exp.index(day45))
