@@ -53,7 +53,7 @@ def scrapeSP500(url, name, level):
     else: # Stock
       #savetm(cols[2], cols_fmt, now, False)
       print(cols[2], cols_fmt)
-      get_option(cols[2])
+      get_option(cols[2].replace('.','-')) # for BRK.B to BRK-B
       # indivisual stock, instead of sleep, let's do something in real-time such as get the snapshot of Option.
     
     # TODO: - at this point, we are going to get Option Info and save it too  

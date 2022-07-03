@@ -20,6 +20,9 @@ from cacheOp1 import getOP
 # lastly, go into each list and remove ending '/' so it will looks like .../list[x]/ with +1 to depth
 def load_json_list(key, jl, depth, maxdepth):
     global LJP
+    if len(jl) == 0:
+      if LJP: print(depth, key, 'L', len(jl), '[]')
+      return
     if isinstance(jl[0], int): 
       if LJP: print(depth, key, 'L', len(jl), 'int')
       return
@@ -137,19 +140,31 @@ def filter_option_json(content):
   jo = json.loads(content)
   # iterate the json object, staring with '/' and depth 0 and then max depth is 5
   load_json('/', jo, 0, 5)
+  tick=   jo['optionChain']['result'][0]['quote']['symbol'] # tick
+  if not 'bid' in jo['optionChain']['result'][0]['quote']:
+     print(tick, "No quote/bid provided")
+     return
   bid =   jo['optionChain']['result'][0]['quote']['bid']
   #/optionChain/result[0]/expirationDates/
   # https://query1.finance.yahoo.com/v7/finance/options/TSLA?date=1646352000 
   exp =   jo['optionChain']['result'][0]['expirationDates']
+  if len(exp) == 0: 
+     print(tick, "No option chain provided")
+     return 
   ms  =   jo['optionChain']['result'][0]['quote']['marketState'] # some can do on 'POST' market
-  tick=   jo['optionChain']['result'][0]['quote']['symbol'] # tick
   # /optionChain/result[0]/quote/marketCap/ 706600304640
   cap =   jo['optionChain']['result'][0]['quote']['marketCap'] #  > 47999999999  - about 50B
   # 5 /optionChain/result[0]/quote/averageDailyVolume3Month/ 29645357
   avgv =  jo['optionChain']['result'][0]['quote']['averageDailyVolume3Month'] #  > 4999999  - about 5M
   # SP500, 32T in total (2022.7). Avg Cap: 15B. so min 5M shares per day ,1B shares per year-> avg price 50. daily 3% 
-  tradex = int(bid*avgv/cap *220)  #  yearly trading exchange 
-  print(exp[0], ms, tick, cap, avgv, tradex,'times')
+  tradex = int(bid*avgv/cap *2200)  #  yearly trading exchange 
+  # {:>5} - string, 5 chars and right-aligned, also str.rjust(5) will do it
+  # {:7.2f} - floating, total 7 chars with 2 decimal. not integer length is 7 but total length
+  # {:3d} - integer,  totla 3 chars
+  capB = cap/1000000000
+  avgvM = avgv/1000000
+  if avgvM > 10.0 and tradex > 10 :
+    print("{} {} {:>5} {:7.2f}B {:6.2f}M {:6.2f} {:3d} times".format(exp[0], ms, tick, capB, avgvM, bid, tradex))
   day45 = day45fromexp(exp)
   print("day45", ts2Ymd(day45, 1), exp.index(day45))
   return
@@ -162,4 +177,5 @@ def get_option(tick):
   filter_option_json(resp.content)
 
 if __name__ == '__main__':
-  get_option('TSLA')
+  #get_option('TSLA')
+  get_option('BRK-B')
