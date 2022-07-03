@@ -37,6 +37,7 @@ def scrapeSP500(url, name, level):
   print("Total Rows: ", link_found)
   level += 1
   now = datetime.now()
+  feature = []
   for link in allLinks:
     #print(link)
     cols = link.find_all('td')
@@ -53,12 +54,18 @@ def scrapeSP500(url, name, level):
     else: # Stock
       #savetm(cols[2], cols_fmt, now, False)
       print(cols[2], cols_fmt)
-      get_option(cols[2].replace('.','-')) # for BRK.B to BRK-B
+      ret = get_option(cols[2].replace('.','-')) # for BRK.B to BRK-B
+      if ret and len(ret) > 0: feature.append(ret)
       # indivisual stock, instead of sleep, let's do something in real-time such as get the snapshot of Option.
     
     # TODO: - at this point, we are going to get Option Info and save it too  
     continue
 
+  # now we got the feature. we would re-range and list
+  # 1657238400 CLOSED  NCLH    4.75B  21.32M  11.27 111 times
+  feature.sort(key = lambda x: int(x.split()[6]))
+  for x in feature: print(x)  
+ 
 while True:
   if tradingtime() == False: 
     # do off the hour analysis

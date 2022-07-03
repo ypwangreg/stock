@@ -163,18 +163,20 @@ def filter_option_json(content):
   # {:3d} - integer,  totla 3 chars
   capB = cap/1000000000
   avgvM = avgv/1000000
+  ret = ""
   if avgvM > 10.0 and tradex > 10 :
-    print("{} {} {:>5} {:7.2f}B {:6.2f}M {:6.2f} {:3d} times".format(exp[0], ms, tick, capB, avgvM, bid, tradex))
+    ret = "{} {} {:>5} {:7.2f}B {:6.2f}M {:6.2f} {:3d} times".format(exp[0], ms, tick, capB, avgvM, bid, tradex)
+    print(ret)
   day45 = day45fromexp(exp)
   print("day45", ts2Ymd(day45, 1), exp.index(day45))
-  return
+  return ret
 
 # tick is all Capital
 def get_option(tick):
   resp = getOP(tick)
   print(resp.headers)
   #parse_option_json(content)
-  filter_option_json(resp.content)
+  return filter_option_json(resp.content)
 
 if __name__ == '__main__':
   #get_option('TSLA')
