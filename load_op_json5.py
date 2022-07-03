@@ -166,7 +166,7 @@ def filter_option_json(content):
   ret = ""
   if avgvM > 10.0 and tradex > 10 :
     ret = "{} {} {:>5} {:7.2f}B {:6.2f}M {:6.2f} {:3d} times".format(exp[0], ms, tick, capB, avgvM, bid, tradex)
-    print(ret)
+    #print(ret)
   day45 = day45fromexp(exp)
   print("day45", ts2Ymd(day45, 1), exp.index(day45))
   return ret

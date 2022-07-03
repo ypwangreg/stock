@@ -4,9 +4,9 @@ import json
 from cache2 import getz
 BU='https://query1.finance.yahoo.com/v7/finance/options/'
 
-from trade import tradingtime
+from trade import tradingtime, lastradingtime, timepath
 
-import os.path
+import os
 LP='./cache/'
 
 class LocalObject(object):
@@ -15,15 +15,18 @@ class LocalObject(object):
 def getURL(url, name):
     useLocal= False
     if tradingtime() == False: useLocal = True
-    if useLocal and os.path.isfile(LP+name):
+    path = LP+timepath(lastradingtime())+'/'
+    if os.path.isdir(path) == False : os.mkdir(path)
+    path += name 
+    if useLocal and os.path.isfile(path):
        obj = LocalObject()
-       obj.headers = 'using '+ LP+name
-       with open(LP+name, 'rb') as f:
+       obj.headers = 'using '+ path
+       with open(path, 'rb') as f:
          obj.content = f.read()
        return obj
      
     resp=getz(url)
-    with open(LP+name, 'wb') as f:
+    with open(path, 'wb') as f:
       f.write(resp.content)
     return resp
 
