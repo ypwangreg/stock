@@ -24,8 +24,14 @@ def lastradingtime(tm=datetime.now()):
 def timepath(tm):
   return "{}{:02d}{:02d}-{:02d}{:02d}".format(tm.year, tm.month, tm.day, tm.hour, tm.minute)
 
+def timestampath(ts):
+  tm = datetime.fromtimestamp(ts)
+  return "{}{:02d}{:02d}".format(tm.year, tm.month, tm.day)
+
 
 if __name__ == '__main__':
   print(tradingtime())
   dt = lastradingtime()
   print(dt, int(dt.timestamp()), timepath(dt))
+  ts = 1657238400
+  print(ts, timestampath(ts))

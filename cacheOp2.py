@@ -4,7 +4,7 @@ import json
 from cache2 import getz
 BU='https://query1.finance.yahoo.com/v7/finance/options/'
 
-from trade import tradingtime, lastradingtime, timepath
+from trade import tradingtime, lastradingtime, timepath, timestampath
 
 import os
 LP='./cache/'
@@ -17,6 +17,10 @@ def getURL(url, name, date=0):
     if tradingtime() == False: useLocal = True
     path = LP+timepath(lastradingtime())+'/'
     if os.path.isdir(path) == False : os.mkdir(path)
+    if date > 0: 
+      path += timestampath(date)+'/'
+      if os.path.isdir(path) == False: os.mkdir(path)
+      url += '?date='+str(date)
     path += name 
     if useLocal and os.path.isfile(path):
        obj = LocalObject()
@@ -40,3 +44,5 @@ if __name__ == '__main__':
    print(resp.headers)
    resp=getURL('https://www.slickcharts.com/sp500', 'SP500')
    print(len(resp.content))
+   resp=getOP('TSLA', 1660867200)
+   print(resp.headers)
