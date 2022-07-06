@@ -10,7 +10,8 @@ def tradingtime(tm = None):
   return "{:02d}:{:02d}".format(tm.hour, tm.minute)
 
 # return the last trding time based on input
-def lastradingtime(tm=datetime.now()):
+def lastradingtime(tm=None):
+  if tm == None: tm = datetime.now()
   tmo = tradingtime(tm)
   if (tmo == False):
     if tm.weekday() > 4: # weekend
@@ -32,6 +33,6 @@ def timestampath(ts):
 if __name__ == '__main__':
   print(tradingtime())
   dt = lastradingtime()
-  print(dt, int(dt.timestamp()), timepath(dt))
+  print('lastradingtime', dt, int(dt.timestamp()), timepath(dt))
   ts = 1657238400
   print(ts, timestampath(ts))

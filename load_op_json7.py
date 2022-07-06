@@ -155,6 +155,10 @@ def filter_option_json(content):
      return 
   ms  =   jo['optionChain']['result'][0]['quote']['marketState'] # some can do on 'POST' market, sometime, it can be POSTPOST
   # /optionChain/result[0]/quote/marketCap/ 706600304640
+  #   File "/home/opc/stock/load_op_json7.py", line 158, in filter_option_json
+#(base) [opc@instance-20220413-1542 stock]$ ls -l ./cache/20220706-1553/APA
+#-rw-rw-r--. 1 opc opc 9693 Jul  6 15:53 ./cache/20220706-1553/APA
+#KeyError: 'marketCap'
   cap =   jo['optionChain']['result'][0]['quote']['marketCap'] #  > 47999999999  - about 50B
   # 5 /optionChain/result[0]/quote/averageDailyVolume3Month/ 29645357
   avgv =  jo['optionChain']['result'][0]['quote']['averageDailyVolume3Month'] #  > 4999999  - about 5M

@@ -14,8 +14,12 @@ class LocalObject(object):
 
 def getURL(url, name, date=0):
     useLocal= False
-    if tradingtime() == False: useLocal = True
-    path = LP+timepath(lastradingtime())+'/'
+    path = LP
+    if tradingtime() == False: 
+      useLocal = True
+      if os.path.isdir(path) == False: os.mkdir(path)
+    path += timepath(lastradingtime())+'/'
+    #print('oP2 getURL', name, path)
     if os.path.isdir(path) == False : os.mkdir(path)
     if date > 0: 
       path += timestampath(date)+'/'
