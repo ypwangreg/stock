@@ -133,6 +133,8 @@ def load_exp_date(tick, i, x):
        resp=getz(BU+'TSLA?date='+str(x))
        parse_option_json(resp.content, False, i) 
 
+# this is copied from load_exp_date and it will return some statistic based on the stock info/quote part
+# later on, based on the information here, we could decide if we are interested in further download all option info
 def filter_option_json(content):
   global LJP
   # don't print duplicated quote info and parser info(depth, structure etc.)
@@ -151,7 +153,7 @@ def filter_option_json(content):
   if len(exp) == 0: 
      print(tick, "No option chain provided")
      return 
-  ms  =   jo['optionChain']['result'][0]['quote']['marketState'] # some can do on 'POST' market
+  ms  =   jo['optionChain']['result'][0]['quote']['marketState'] # some can do on 'POST' market, sometime, it can be POSTPOST
   # /optionChain/result[0]/quote/marketCap/ 706600304640
   cap =   jo['optionChain']['result'][0]['quote']['marketCap'] #  > 47999999999  - about 50B
   # 5 /optionChain/result[0]/quote/averageDailyVolume3Month/ 29645357
@@ -175,13 +177,21 @@ def filter_option_json(content):
   if day45>0: print("day45:", ts2Ymd(day45, 1), exp.index(day45), day45)
   return ret
 
-# tick is all Capital
+# tick is all Capital, save the weekly option data to cache/ and then return filtered info 
+# should be called get_cwk_option_quote
 def get_option(tick):
   resp = getOP(tick)
   print(resp.headers)
-  #parse_option_json(content)
+  #parse_option_json(resp.content)
   return filter_option_json(resp.content)
 
+def get_wkly_info(tick):
+  resp = getOP(tick)
+  print(resp.headers)
+  parse_option_json(resp.content)
+
+# get all option info and show the farest option details. (i == len(exp) -1)
+# say, this will print abount 100% upside and 50% downside option for TSLA at 2024-06-24 (about 2 years)
 def filter_all_option_json(content):
   global LJP
   LJP = False
@@ -197,14 +207,18 @@ def filter_all_option_json(content):
         #jo = json.loads(resp.content)
         #load_json('/', jo, 0, 5)
         parse_option_json(resp.content, False, i)
-        
+
+# wrapper to for about function, get the current weekly first and then 
+# based on the expirationDates in the quote to get the rest      
 def get_all_option(tick):
   resp = getOP(tick)
   filter_all_option_json(resp.content)
 
 if __name__ == '__main__':
   #get_option('TSLA')
-  get_option('BRK-B')
-  mywatch = ['TSLA','INTC','RBLX','AMD','META','AMZN','NFLX','AAPL','SHOP','CCL']
-  for t in mywatch:
-     get_all_option(t)
+  #get_option('BRK-B')
+  # load the following 10 stocks option into the cache/
+  #mywatch = ['TSLA','INTC','RBLX','AMD','META','AMZN','NFLX','AAPL','SHOP','CCL']
+  #for t in mywatch:
+  #   get_all_option(t)
+  get_wkly_info('TSLA')
