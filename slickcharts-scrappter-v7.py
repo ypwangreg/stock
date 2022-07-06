@@ -54,7 +54,10 @@ def scrapeSP500(url, name, level):
     else: # Stock
       #savetm(cols[2], cols_fmt, now, False)
       print(cols[2], cols_fmt)
+      # too much and too quick requests send... need to send slowly... sleep(1)
       ret = get_option(cols[2].replace('.','-')) # for BRK.B to BRK-B
+      sleep(1)
+      # OR get_weighted_option(cols[2])  # move the replace('.','-') inside
       if ret and len(ret) > 0: feature.append(ret)
       # indivisual stock, instead of sleep, let's do something in real-time such as get the snapshot of Option.
     

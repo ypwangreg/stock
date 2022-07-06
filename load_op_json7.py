@@ -114,7 +114,7 @@ def parse_option_json(content, cont=True, dayindex=0):
   tradex = int(bid*avgv/cap *220)  #  yearly trading exchange 
   print(exp[0], ms, tick, cap, avgv, tradex,'times')
   day45 = day45fromexp(exp)
-  print("day45", ts2Ymd(day45, 1), exp.index(day45))
+  if day45 > 0: print("day45", ts2Ymd(day45, 1), exp.index(day45))
   return
  
   for i,x in enumerate(exp):
@@ -172,7 +172,7 @@ def filter_option_json(content):
            exp[0], ms, tick, capB, avgvM, bid, tradex, tradeB)
     #print(ret)
   day45 = day45fromexp(exp)
-  print("day45:", ts2Ymd(day45, 1), exp.index(day45), day45)
+  if day45>0: print("day45:", ts2Ymd(day45, 1), exp.index(day45), day45)
   return ret
 
 # tick is all Capital
@@ -205,4 +205,6 @@ def get_all_option(tick):
 if __name__ == '__main__':
   #get_option('TSLA')
   get_option('BRK-B')
-  get_all_option('TSLA')
+  mywatch = ['TSLA','INTC','RBLX','AMD','META','AMZN','NFLX','AAPL','SHOP','CCL']
+  for t in mywatch:
+     get_all_option(t)
