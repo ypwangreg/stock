@@ -2,7 +2,7 @@ import cache
 from bs4 import BeautifulSoup
 import random
 from time import sleep
-from cockdb import save, savetm, show
+from cockdb_v2 import save, savetm, show
 from datetime import datetime
 from trade import tradingtime
 from cacheOp1 import getURL
@@ -13,12 +13,15 @@ link_visit = 0
 sleep_cnt = 0
 link_return = 0
 
+loop = 0
+top_list = []
+
 def cond(x):
     print(x)
     return True
 
 def scrapeSP500(url, name, level):
-  global link_found, link_visit, sleep_cnt, link_return
+  global link_found, link_visit, sleep_cnt, link_return, top_list, loop
   try:
     #response = cache.get(url)
     response = getURL(url, name)
@@ -55,15 +58,18 @@ def scrapeSP500(url, name, level):
       #savetm(cols[2], cols_fmt, now, False)
       print(cols[2], cols_fmt)
       # too much and too quick requests send... need to send slowly... sleep(1)
-      ret = get_option(cols[2].replace('.','-')) # for BRK.B to BRK-B
+      if loop == 0 or cols[2] in top_list:
+         ret, avgvM, tradeB = get_option(cols[2].replace('.','-'), False) # for BRK.B to BRK-B
+         if avgvM > 10.0 or tradeB > 1.0 :
+            if cols[2] not in top_list: top_list.append(cols[2])
       #if avgvM > 10.0 and (tradex >= 10 or tradeB > 1.0) :
       # dB is daily Billions
       #ret = "{} {} {:>5} {:7.2f}B {:6.2f}M {:6.2f} {:3d} times {:7.2f} dB".format(
       #    exp[0], ms, tick, capB, avgvM, bid, tradex, tradeB)
-      sleep(0.1)
       # OR get_weighted_option(cols[2])  # move the replace('.','-') inside
-      if ret and len(ret) > 0: feature.append(ret)
+         if ret and len(ret) > 0: feature.append(ret)
       # indivisual stock, instead of sleep, let's do something in real-time such as get the snapshot of Option.
+      sleep(0.1)
     
     # TODO: - at this point, we are going to get Option Info and save it too  
     continue
@@ -83,6 +89,7 @@ def scrapeSP500(url, name, level):
   print("   -------------     by stock Price      ---------------       ") 
   feature.sort(key = lambda x: int(float(x.split()[5])))  
   for x in feature: print(x)  
+  loop += 1
  
 while True:
   if tradingtime() == False: 
@@ -92,4 +99,4 @@ while True:
     break
   else:
     scrapeSP500("https://www.slickcharts.com/sp500", 'SP500', 0)
-    sleep(30)
+    sleep(5)

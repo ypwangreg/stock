@@ -92,9 +92,15 @@ def parse_option_json(content, cont=True, dayindex=0):
   calls = jo['optionChain']['result'][0]['options'][0]['calls']
   puts =  jo['optionChain']['result'][0]['options'][0]['puts']
   bid =   jo['optionChain']['result'][0]['quote']['bid']
-  cs = filter_chains( calls , bid,  0.1+dayindex*0.05)
-  ps = filter_chains( puts , bid, 0.05+dayindex*0.025)
-  print('after filter', bid, len(cs), len(ps))
+  cs = []
+  ps = []
+  while True:
+    cs = filter_chains( calls , bid,  0.1+dayindex*0.05)
+    ps = filter_chains( puts , bid, 0.05+dayindex*0.025)
+    print('after filter', bid, len(cs), len(ps))
+    if len(cs) == 0 or len(ps) == 0: dayindex += 1
+    else: break
+    if dayindex > 20: break
   printltd(cs[-1])
   printltd(cs[int(len(cs)/2)])
   printltd(ps[int(len(ps)/2)])
@@ -145,14 +151,14 @@ def filter_option_json(content):
   tick=   jo['optionChain']['result'][0]['quote']['symbol'] # tick
   if not 'bid' in jo['optionChain']['result'][0]['quote']:
      print(tick, "No quote/bid provided")
-     return
+     return ('', 0.0, 0.0)
   bid =   jo['optionChain']['result'][0]['quote']['bid']
   #/optionChain/result[0]/expirationDates/
   # https://query1.finance.yahoo.com/v7/finance/options/TSLA?date=1646352000 
   exp =   jo['optionChain']['result'][0]['expirationDates']
   if len(exp) == 0: 
      print(tick, "No option chain provided")
-     return 
+     return ('', 0.0, 0.0)
   ms  =   jo['optionChain']['result'][0]['quote']['marketState'] # some can do on 'POST' market, sometime, it can be POSTPOST
   # /optionChain/result[0]/quote/marketCap/ 706600304640
   #   File "/home/opc/stock/load_op_json7.py", line 158, in filter_option_json
@@ -179,13 +185,14 @@ def filter_option_json(content):
     #print(ret)
   day45 = day45fromexp(exp)
   if day45>0: print("day45:", ts2Ymd(day45, 1), exp.index(day45), day45)
-  return ret
+  return (ret, round(avgvM,2), round(tradeB,2))
 
 # tick is all Capital, save the weekly option data to cache/ and then return filtered info 
 # should be called get_cwk_option_quote
-def get_option(tick):
+def get_option(tick, headers=True):
+  tick = tick.replace('.','-')
   resp = getOP(tick)
-  print(resp.headers)
+  if headers: print(resp.headers)
   #parse_option_json(resp.content)
   return filter_option_json(resp.content)
 
@@ -218,11 +225,38 @@ def get_all_option(tick):
   resp = getOP(tick)
   filter_all_option_json(resp.content)
 
+from datetime import datetime
+
+def filter_option_by_date(content, month, year):
+  global LJP
+  LJP = False
+  jo = json.loads(content)
+  tick=   jo['optionChain']['result'][0]['quote']['symbol'] # tick
+  exp =   jo['optionChain']['result'][0]['expirationDates']
+  resp = None
+  for i,x in enumerate(exp):
+     tm = datetime.fromtimestamp(x)
+     if tm.month == month and tm.year == year: 
+        print(tick, i, ts2Ymd(x))
+        resp = getOP(tick, x)
+        parse_option_json(resp.content, False, i)
+
+def get_month_option(tick, month=None, year=None):
+  tm = datetime.now()
+  if month == None: month = tm.month
+  if year == None: year = tm.year
+  resp = getOP(tick)
+  filter_option_by_date(resp.content, month, year)  
+
 if __name__ == '__main__':
-  #get_option('TSLA')
+  print(get_option('TSLA'))
   #get_option('BRK-B')
   # load the following 10 stocks option into the cache/
   #mywatch = ['TSLA','INTC','RBLX','AMD','META','AMZN','NFLX','AAPL','SHOP','CCL']
   #for t in mywatch:
   #   get_all_option(t)
-  get_wkly_info('TSLA')
+  #get_wkly_info('TSLA')
+  #get_month_option('TSLA')    # all options in July
+  #get_month_option('TSLA', 8) # all options in August. last 0818
+  #get_month_option('TSLA', 9)  # all options in Sept, only 1  09-15
+  #get_month_option('TSLA', 1, 2023)    # all options in July
