@@ -100,3 +100,5 @@ while True:
   else:
     scrapeSP500("https://www.slickcharts.com/sp500", 'SP500', 0)
     sleep(5)
+
+# run it with python -u to disable  output buffer
