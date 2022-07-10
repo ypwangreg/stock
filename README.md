@@ -3,7 +3,11 @@ Option Chain querier and explorer
 
 * run python load_op_json7.py 
 ```
-{'content-type': 'application/json;charset=utf-8', 'vary': 'Origin,Accept-Encoding', 'cache-control': 'public, max-age=1, stale-while-revalidate=9', 'y-rid': 'bgmsla9hclte5', 'x-yahoo-request-id': 'bgmsla9hclte5', 'x-request-id': '8900960d-1488-4e31-8fa0-f22a5e4d6f3c', 'content-encoding': 'gzip', 'x-envoy-upstream-service-time': '68', 'date': 'Sun, 10 Jul 2022 15:52:37 GMT', 'server': 'ATS', 'x-envoy-decorator-operation': 'finance-quote-api--mtls-production-bf1.finance-k8s.svc.yahoo.local:4080/*', 'Age': '0', 'Strict-Transport-Security': 'max-age=15552000', 'Referrer-Policy': 'no-referrer-when-downgrade', 'X-Frame-Options': 'SAMEORIGIN', 'Transfer-Encoding': 'chunked', 'Connection': 'keep-alive', 'Expect-CT': 'max-age=31536000, report-uri="http://csp.yahoo.com/beacon/csp?src=yahoocom-expect-ct-report-only"', 'X-XSS-Protection': '1; mode=block', 'X-Content-Type-Options': 'nosniff'}
+{'content-type': 'application/json;charset=utf-8', 'vary': 'Origin,Accept-Encoding', 'cache-control': 'public, max-age=1, stale-while-revalidate=9', 'y-rid': 'bgmsla9hclte5', 'x-yahoo-request-id': 'bgmsla9hclte5', 'x-request-id': '8900960d-1488-4e31-8fa0-f22a5e4d6f3c', 'content-encoding': 'gzip', 'x-envoy-upstream-service-time': '68', 'date': 'Sun, 10 Jul 2022 15:52:37 GMT', 'server': 'ATS', 'x-envoy-decorator-operation': 'finance-quote-api--mtls-production-bf1.finance-k8s.svc.yahoo.local:4080/*', 'Age': '0', 'Strict-Transport-Security': 'max-age=15552000', 'Referrer-Policy': 'no-referrer-when-downgrade', 'X-Frame-Options': 'SAMusing ./cache/20220708-1600/TSLA
+25
+day45: 2022-09-15 20:00:00 6 1663286400
+26
+('1657843200 CLOSED  TSLA  779.67B  29.79M 751.90  63 times   22.40 dB', 29.79, 22.4)EORIGIN', 'Transfer-Encoding': 'chunked', 'Connection': 'keep-alive', 'Expect-CT': 'max-age=31536000, report-uri="http://csp.yahoo.com/beacon/csp?src=yahoocom-expect-ct-report-only"', 'X-XSS-Protection': '1; mode=block', 'X-Content-Type-Options': 'nosniff'}
 day45: 2022-09-15 20:00:00 6 1663286400
 ('1657843200 CLOSED  TSLA  779.67B  29.79M 751.90  63 times   22.40 dB', 29.79, 22.4)
 ```
@@ -18,6 +22,21 @@ a string '' shows that 1657843200, current week expiration is at 07-14 , current
 90 days average trading volume at 29.79M and closing price is 751.90. 
 current trading volume equal to 63 times of its market cap in 10 years, that is 6.3 per year. it is HUGE. meaning the total trading in whole year would be 4T.
 the daily trading volume is equal to 22.40B. 3% exchange hands per day. that is HUGE too!
+
+if you uncomment the ' get_month_option('TSLA', 1, 2023)'  you will get the following
+```
+TSLA 10 2023-01-19
+after filter 751.9 57 34
+{'contractSymbol': 'TSLA230120C01200000', 'strike': 1200.0, 'currency': 'USD', 'lastPrice': 28.57, 'change': 3.459999, 'percentChange': 13.779367, 'volume': 215, 'openInterest': 8890, 'bid': 28.0, 'ask': 29.45, 'contractSize': 'REGULAR', 'expiration': 1674172800, 'lastTradeDate': 1657308374, 'impliedVolatility': 0.590473455657959, 'inTheMoney': False} 2022-07-08 15:26:14
+{'contractSymbol': 'TSLA230120C00770000', 'strike': 770.0, 'currency': 'USD', 'lastPrice': 140.55, 'change': 13.450005, 'percentChange': 10.582223, 'volume': 19, 'openInterest': 579, 'bid': 135.95, 'ask': 138.15, 'contractSize': 'REGULAR', 'expiration': 1674172800, 'lastTradeDate': 1657305520, 'impliedVolatility': 0.6630053841400148, 'inTheMoney': False} 2022-07-08 14:38:40
+{'contractSymbol': 'TSLA230120P00720000', 'strike': 720.0, 'currency': 'USD', 'lastPrice': 117.51, 'change': -6.989998, 'percentChange': -5.614456, 'volume': 32, 'openInterest': 1688, 'bid': 116.45, 'ask': 118.9, 'contractSize': 'REGULAR', 'expiration': 1674172800, 'lastTradeDate': 1657308974, 'impliedVolatility': 0.6261328890991212, 'inTheMoney': False} 2022-07-08 15:36:14
+{'contractSymbol': 'TSLA230120P00530000', 'strike': 530.0, 'currency': 'USD', 'lastPrice': 49.0, 'change': -15.099998, 'percentChange': -23.55694, 'volume': 13, 'openInterest': 2617, 'bid': 48.0, 'ask': 49.45, 'contractSize': 'REGULAR', 'expiration': 1674172800, 'lastTradeDate': 1657308207, 'impliedVolatility': 0.7156400506591796, 'inTheMoney': False} 2022-07-08 15:23:27
+
+```
+it will print some info of the option that you are referring, for this example, it is far expiration at 6 months later
+you can see for the 1200's Call option, it increases 3.5 and 770's call option, 13.5. 530's Put option, decrease 15 and 720's Put 7.
+In the last part, it will also show when it was last traded.
+you can change the app to show more entries even all entries and maybe add some filter to show only the ones that you are interested. 
 
 * run python -u slickcharts-scrappter-v7.py |tee v7.log
 ```
