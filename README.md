@@ -92,3 +92,7 @@ by trading daily volume, you can see Telsa is as double as Apple and Amazon! ver
 finally by price, the lowest price in SP500 is CCL, it is cruise ship company and it did not get die in mar 2020 but it seems losing more flood now!
 the most expensive one is Telsa (in the most active stocks, GOOL is about 2000 but it is not most active trading stocks)
 you can change the code to include your own analysis/sorting
+
+The good part for this app next time you run it, it will get all data from the cache instead of downloading again from internet so it will save the bandwidth as well as reduce the chance that your IP will be blocked by the provider and you can run as many tests/debuggings as you want.
+
+Have fun and peace!
