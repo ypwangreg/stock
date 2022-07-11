@@ -5,7 +5,7 @@ from time import sleep
 from cockdb_v2 import save, savetm, show
 from datetime import datetime
 from trade import tradingtime
-from cacheOp1 import getURL
+from cacheOp2 import getURL
 from load_op_json7 import get_option
 
 link_found = 0
