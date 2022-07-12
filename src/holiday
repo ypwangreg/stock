@@ -1,0 +1,2 @@
+1. Either we do an API to query in advance  or
+2. we have a cache and if we get the same result , then wait 1 minutes if it still the same , double the time, until it reaches 1 hour
