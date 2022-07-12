@@ -1,5 +1,0 @@
-1. 2022-06-12
-https://requests-cache.readthedocs.io/en/stable/
- 1164  conda config --add channels conda-forge
- 1165  conda config --set channel_priority strict
- 1166  conda install  requests-cache
