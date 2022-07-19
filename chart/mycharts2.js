@@ -6,8 +6,8 @@ document.body.style.position = 'relative';
 var container = document.createElement('div');
 document.body.appendChild(container);
 
-var width = 600;
-var height = 300;
+var width = 960;
+var height = 500;
 
 var chart = LightweightCharts.createChart(container, {
 	width: width,
@@ -23,8 +23,9 @@ var chart = LightweightCharts.createChart(container, {
 
 var lines  = [];
 var colors = [];
-function AddSmaLine(data, rgba) {
-  var smaData = calculateSMA(data, 10);
+var smawid = [];
+function AddSmaLine(data, rgba, width=10) {
+  var smaData = calculateSMA(data, width);
   var smaLine = chart.addLineSeries({
 	//color: 'rgba(4, 111, 232, 1)',
 	color: rgba,
@@ -34,6 +35,7 @@ function AddSmaLine(data, rgba) {
   //setLegendText(smaData[smaData.length - 1].value);
   lines.push(smaLine);
   colors.push(rgba);
+  smawid.push(width);
 }
 
 /*
@@ -54,18 +56,31 @@ function setLegendText(priceValue, rgba) {
 	}
     for (var x = 0; x < lines.length; x++) {
         if (rgba === colors[x]) {
-	       legends[x].innerHTML = 'MA10 <span style="color:'+rgba+'">' + val + '</span>';
+	       legends[x].innerHTML = 'MA'+smawid[x]+' <span style="color:'+rgba+'">' + val + '</span>';
         }
     }
 }
 
 
-getStock({ stock: 'AAPL', startDate: '2022-07-01', endDate: '2022-07-15' }, 'historicaldata', function(err, data) {
+//getStock({ stock: 'APPL', startDate: '2022-07-01', endDate: '2022-07-15' }, 'historicaldata', function(err, data) {
+getStock({ stock: 'AAPL', period: '2y'}, 'period', function(err, data) {
+    chart.applyOptions({
+    	watermark: {
+		visible: true,
+		fontSize: 48,
+		horzAlign: 'right',
+		vertAlign: 'top',
+		color: 'rgba(171, 71, 188, 0.5)',
+		text: 'AAPL',
+	},});
     //console.log(data);
     //var data = generateBarsData();
     var candleSeries = chart.addCandlestickSeries();
     candleSeries.setData(data);
     AddSmaLine(data,  'rgba(4, 111, 232, 1)');
+    AddSmaLine(data,  'rgba(114, 11, 232, 1)', 50);
+    AddSmaLine(data,  'rgba(0, 119, 132, 1)', 80);
+    AddSmaLine(data,  'rgba(255, 130, 0, 1)', 200);
     createLegend();
 
     chart.subscribeCrosshairMove((param) => {

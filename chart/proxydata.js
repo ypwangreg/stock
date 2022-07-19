@@ -13,10 +13,12 @@
             baseURL: '/',
             query: {
                 quotes: 'quote/{stock}?sort={sortBy}&descend={desc}',
+                period: 'period/{stock}/{period}',
                 historicaldata: 'history/{stock}?period1={startDate}&period2={endDate}&interval=1d'
             },
             suffixURL: {
                 quotes: '',
+                period: '',
                 historicaldata: ''
             }
         };
@@ -34,6 +36,7 @@
         .replace('{desc}', defs.desc)
         .replace('{startDate}', toTimestamp(opts.startDate))
         .replace('{endDate}', toTimestamp(opts.endDate))
+        .replace('{period}', opts.period)
 
         var url = defs.baseURL + query + (defs.suffixURL[type] || '');
 
@@ -71,7 +74,7 @@
 getStock({ stock: 'AAPL' }, 'quotes', function(err, data) {
     console.log(data);
 });
-getStock({ stock: 'AAPL', startDate: '2013-01-01', endDate: '2013-01-05' }, 'historicaldata', function(err, data) {
+getStock({ stock: 'AAPL', period: '1y' }, 'period', function(err, data) {
     console.log(data);
 });
 */

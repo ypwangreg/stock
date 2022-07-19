@@ -258,5 +258,5 @@ if __name__ == '__main__':
   #get_wkly_info('TSLA')
   #get_month_option('TSLA')    # all options in July
   #get_month_option('TSLA', 8) # all options in August. last 0818
-  #get_month_option('TSLA', 9)  # all options in Sept, only 1  09-15
+  get_month_option('TSLA', 9)  # all options in Sept, only 1  09-15
   #get_month_option('TSLA', 1, 2023)    # all options in July
