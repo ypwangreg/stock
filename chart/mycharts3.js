@@ -50,7 +50,7 @@ smaLine.setData(smaData);
 
 var legends = [];
 
-function setLegendText(priceValue, rgba) {
+function setLegendText(priceValue, x) {
 	let val = '∅';
 	if (priceValue !== undefined) {
         let unit='', div = 100;
@@ -59,16 +59,24 @@ function setLegendText(priceValue, rgba) {
         else  /* priceValue < 1000 */{ unit='';  div *=1; } 
         val = (Math.round(priceValue * 100) / div).toFixed(2) + unit;
 	}
-    for (var x = 0; x < lines.length; x++) {
-        if (rgba === colors[x]) {
-	       legends[x].innerHTML = smawid[x]+' <span style="color:'+rgba+'">' + val + '</span>';
-        }
-    }
+    //for (var x = 0; x < lines.length; x++) {
+    //    if (rgba === colors[x]) {
+	       legends[x].innerHTML = smawid[x]+' <span style="color:'+colors[x]+'">' + val + '</span>';
+    //    }
+    //}
 }
 
+stock = 'APPL';
+period = '2y';
+let params = new URLSearchParams(document.location.search)
+//console.log('location ref', window.location.href, params, params.get("symbol"), params.get("period"));
+if (params !== undefined) {
+    stock = params.get("symbol");
+    period= params.get("period");
+}
 
 //getStock({ stock: 'APPL', startDate: '2022-07-01', endDate: '2022-07-15' }, 'historicaldata', function(err, data) {
-getStock({ stock: 'AAPL', period: '2y'}, 'period', function(err, data, vdata) {
+getStock({ stock: stock, period: period}, 'period', function(err, data, vdata) {
     chart.applyOptions({
     	watermark: {
 		visible: true,
@@ -76,7 +84,7 @@ getStock({ stock: 'AAPL', period: '2y'}, 'period', function(err, data, vdata) {
 		horzAlign: 'right',
 		vertAlign: 'top',
 		color: 'rgba(171, 71, 188, 0.5)',
-		text: 'AAPL',
+		text: stock,
 	},});
     //console.log(data);
     //var data = generateBarsData();
@@ -94,6 +102,7 @@ getStock({ stock: 'AAPL', period: '2y'}, 'period', function(err, data, vdata) {
         type: 'volume',
       },
       overlay: true,
+      priceScaleId: '',
       scaleMargins: {
         top: 0.8,
         bottom: 0,
@@ -108,7 +117,7 @@ getStock({ stock: 'AAPL', period: '2y'}, 'period', function(err, data, vdata) {
 
     chart.subscribeCrosshairMove((param) => {
       for (var x = 0; x < lines.length; x++)
-	    setLegendText(param.seriesPrices.get(lines[x]), colors[x]);
+	    setLegendText(param.seriesPrices.get(lines[x]), x);
     });
 
 

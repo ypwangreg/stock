@@ -17,6 +17,8 @@ class MyProxy(SimpleHTTPRequestHandler):
         self.end_headers()
         if os.path.isfile("."+self.path): 
             self.copyfile(open("."+self.path, 'rb'), self.wfile)
+        elif os.path.isfile("."+self.path.split('?')[0]): # for test5.html?symbol=TSLA&period=2y
+            self.copyfile(open("."+self.path.split('?')[0], 'rb'), self.wfile)
         else:
           req=self.path[1:].split('/')
           print('req: ', req)
