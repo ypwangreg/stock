@@ -43,6 +43,7 @@
         $.get(url, function(data) {
             var err = null;
             var res = [];
+            var vres= [];
             if (!data) {
                 err = true;
 
@@ -57,15 +58,18 @@
                     // ['2022-06-16', '668.210022', '675.500000', '626.080017', '639.299988', '35796900', '0', '0']
                     //console.log('parse: ', line)
                     t = line[0].split('-')
-                    res.push({time:{year:parseInt(t[0]), month:parseInt(t[1]), day:parseInt(t[2])}});
+                    tobj = {time:{year:parseInt(t[0]), month:parseInt(t[1]), day:parseInt(t[2])}};
+                    res.push(tobj);
+                    vres.push(tobj);
                     res[i-2].open=parseFloat(line[1]);
                     res[i-2].high=parseFloat(line[2]);
                     res[i-2].low=parseFloat(line[3]);
                     res[i-2].close=parseFloat(line[4]);
+                    vres[i-2].value=parseInt(line[5]);
                 }
             }
             //console.log(res);
-            complete(err, !err && res);    });
+            complete(err, !err && res, !err && vres);    });
     }
     window.getStock = getStock;
 })(jQuery);

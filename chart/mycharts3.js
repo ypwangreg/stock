@@ -35,7 +35,8 @@ function AddSmaLine(data, rgba, width=10) {
   //setLegendText(smaData[smaData.length - 1].value);
   lines.push(smaLine);
   colors.push(rgba);
-  smawid.push(width);
+  if (width < 100) smawid.push('MA'+width);
+  else smawid.push('M'+width);
 }
 
 /*
@@ -52,11 +53,15 @@ var legends = [];
 function setLegendText(priceValue, rgba) {
 	let val = '∅';
 	if (priceValue !== undefined) {
-		val = (Math.round(priceValue * 100) / 100).toFixed(2);
+        let unit='', div = 100;
+        if (priceValue > 1000000 )   { unit='M'; div *= 1000000;  }
+        else if (priceValue > 1000)  { unit='K'; div *= 1000; }
+        else  /* priceValue < 1000 */{ unit='';  div *=1; } 
+        val = (Math.round(priceValue * 100) / div).toFixed(2) + unit;
 	}
     for (var x = 0; x < lines.length; x++) {
         if (rgba === colors[x]) {
-	       legends[x].innerHTML = 'MA'+smawid[x]+' <span style="color:'+rgba+'">' + val + '</span>';
+	       legends[x].innerHTML = smawid[x]+' <span style="color:'+rgba+'">' + val + '</span>';
         }
     }
 }
@@ -81,12 +86,32 @@ getStock({ stock: 'AAPL', period: '2y'}, 'period', function(err, data, vdata) {
     AddSmaLine(data,  'rgba(114, 11, 232, 1)', 50);
     AddSmaLine(data,  'rgba(0, 119, 132, 1)', 80);
     AddSmaLine(data,  'rgba(255, 130, 0, 1)', 200);
+
+    var volumeSeries = chart.addHistogramSeries({
+      color: '#C0C0C0',
+      lineWidth: 2,
+      priceFormat: {
+        type: 'volume',
+      },
+      overlay: true,
+      scaleMargins: {
+        top: 0.8,
+        bottom: 0,
+      },
+    });
+    volumeSeries.setData(vdata);
+    lines.push(volumeSeries);
+    colors.push('#404040');
+    smawid.push('VOL');
+
     createLegend();
 
     chart.subscribeCrosshairMove((param) => {
       for (var x = 0; x < lines.length; x++)
 	    setLegendText(param.seriesPrices.get(lines[x]), colors[x]);
     });
+
+
 });
 
 //var data1 = generateBarsData();
@@ -95,7 +120,7 @@ getStock({ stock: 'AAPL', period: '2y'}, 'period', function(err, data, vdata) {
 //AddSmaLine(data1, 'rgba(114, 11, 232, 1)');
 
 function createLegend() {
-    for (var x = 0; x < lines.length; x++) {
+    for (var x = 0; x < lines.length + 1; x++) {
         var legend = document.createElement('div');
         legend.className = 'sma-legend';
         container.appendChild(legend);

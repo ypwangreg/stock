@@ -1,5 +1,7 @@
 from datetime import datetime, timedelta
 import os
+import pickle
+
 def tradingtime(tm = None):
   if tm == None: tm = datetime.now()
   if tm.hour < 9 or tm.hour > 16 : return False
@@ -40,7 +42,15 @@ def saved(binstr, symbol, period):
    path=timepath()
    if os.path.isdir(path) == False: os.mkdir(path)
    with open(path+'/'+symbol+'-'+period, 'wb') as f:
-     f.write(binstr)
+       if isinstance(binstr, bytes) : f.write(binstr)
+       elif isinstance(binstr, str) : f.write(binstr.encode('utf-8'))
+       else : pickle.dump(binstr, f)
+
+def loaded(path): 
+    ret = None
+    with open(path, 'rb') as f:
+        ret = pickle.load(f)
+    return ret
 
 if __name__ == '__main__':
   print(tradingtime())
@@ -52,4 +62,9 @@ if __name__ == '__main__':
   mstr='hello, world!'
   print(isaved('APPL', '1mo'))
   saved(mstr.encode('utf-8'), 'APPL', '1mo')
+  saved(mstr, 'APPL', '1mostr')
   print(isaved('APPL', '1mo'))
+  ll = ('test', 'this','hello', 123, 345, True, None)
+  saved(ll,  'tuple', 'test')
+  p = isaved('tuple', 'test')
+  print(loaded(p))
