@@ -66,6 +66,11 @@ function setLegendText(priceValue, x) {
     //}
 }
 
+
+regwq('stock', function(msg) {
+    console.log('wq Rx: ', msg);
+});
+
 stock = 'AAPL';
 period = '2y';
 let params = new URLSearchParams(document.location.search)
@@ -78,6 +83,7 @@ if (params !== undefined) {
 
 //getStock({ stock: 'APPL', startDate: '2022-07-01', endDate: '2022-07-15' }, 'historicaldata', function(err, data) {
 getStock({ stock: stock, period: period}, 'period', function(err, data, vdata) {
+    sendwq('stock', {stock, period});  
     chart.applyOptions({
     	watermark: {
 		visible: true,
