@@ -102,7 +102,7 @@ getStock({ stock: stock, period: period}, 'period', function(err, data, vdata) {
       priceFormat: {
         type: 'volume',
       },
-      overlay: true,
+      //overlay: true,
       priceScaleId: '',
       scaleMargins: {
         top: 0.8,

@@ -24,6 +24,11 @@ wq.onmessage = function(e) {
         // we could use queueMicrotask here to control the order of cb
         queueMicrotask(() => { cb_map.get(id)(resp); });
     }
-    else console.log(' Cb is not registered by ', id);
+    else {
+        console.log(' Cb is not registered by ', id, ' broadcasting.. ');
+        for( let [ k, cb ] of cb_map ) {
+            queueMicrotask(() => { cb(e.data); });
+        }
+    }
 }
 

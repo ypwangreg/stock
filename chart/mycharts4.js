@@ -6,16 +6,22 @@ document.body.style.position = 'relative';
 var container = document.createElement('div');
 document.body.appendChild(container);
 
-var width = 960;
+var width = 1280;
 var height = 500;
+var chart = null;
+const v4= (LightweightCharts.version()[0]==='4')
 
-var chart = LightweightCharts.createChart(container, {
+function createChart() {
+ chart = LightweightCharts.createChart(container, {
 	width: width,
 	height: height,
   crosshair: {
 		mode: LightweightCharts.CrosshairMode.Normal,
 	},
-});
+  });
+ return chart;
+}
+createChart();
 
 //let p = {timeFrom: {day: 1, month: 1, year:2022}, timeTo: {day: 20, month: 1, year: 2022}}
 //var data2 = generateBarsData(p);
@@ -64,12 +70,9 @@ function setLegendText(priceValue, x) {
 	       legends[x].innerHTML = smawid[x]+' <span style="color:'+colors[x]+'">' + val + '</span>';
     //    }
     //}
+    //console.log('priceValue, x', priceValue, x, legends[x]);
 }
 
-
-regwq('stock', function(msg) {
-    console.log('wq Rx: ', msg);
-});
 
 stock = 'AAPL';
 period = '2y';
@@ -81,8 +84,9 @@ if (params !== undefined) {
     console.log('[',stock,',',period,']');
 }
 
+
 //getStock({ stock: 'APPL', startDate: '2022-07-01', endDate: '2022-07-15' }, 'historicaldata', function(err, data) {
-getStock({ stock: stock, period: period}, 'period', function(err, data, vdata) {
+function parseStock(err, data, vdata) {
     sendwq('stock', {stock, period});  
     chart.applyOptions({
     	watermark: {
@@ -108,7 +112,7 @@ getStock({ stock: stock, period: period}, 'period', function(err, data, vdata) {
       priceFormat: {
         type: 'volume',
       },
-      overlay: true,
+      //overlay: true,
       priceScaleId: '',
       scaleMargins: {
         top: 0.8,
@@ -123,10 +127,34 @@ getStock({ stock: stock, period: period}, 'period', function(err, data, vdata) {
     createLegend();
 
     chart.subscribeCrosshairMove((param) => {
-      for (var x = 0; x < lines.length; x++)
-	    setLegendText(param.seriesPrices.get(lines[x]), x);
+        //console.log('crosshair move', param);
+      for (var x = 0; x < lines.length; x++) {
+        if(v4) { 
+            if (param.seriesData.get(lines[x]))
+                setLegendText(param.seriesData.get(lines[x]).value, x);
+            else console.log('series get return Null?', x, lines[x]);
+        }
+        else     setLegendText(param.seriesPrices.get(lines[x]), x);
+      }
     });
+}
 
+getStock({ stock: stock, period: period}, 'period', parseStock);
+
+regwq('stock', function(msg) {
+    if ( msg.id != undefined && msg.id === 'switcher' ) {
+        console.log('about to switch');
+        if (chart) {
+          chart.remove();
+          createChart();
+          lines  = [];
+          colors = [];
+          smawid = [];
+          for (l of legends) { l.remove(); }
+          legends = [];
+        }
+        getStock({ stock: stock, period: msg.data}, 'period', parseStock);
+    }
 
 });
 
@@ -142,7 +170,7 @@ function createLegend() {
         container.appendChild(legend);
         legend.style.display = 'block';
         legend.style.left = 3 + 'px';
-        legend.style.top = (3+x*20) + 'px';
+        legend.style.top = 30+(3+x*20) + 'px';   //vertical grows + 
         legends.push(legend);
     }
 }
@@ -238,8 +266,4 @@ function convertBusinessDayToUTCTimestamp(date) {
 function nextBusinessDay(time) {
 	var d = convertBusinessDayToUTCTimestamp({ year: time.year, month: time.month, day: time.day + 1 });
 	return { year: d.getUTCFullYear(), month: d.getUTCMonth() + 1, day: d.getUTCDate() };
-}
-
-function getRandomPrice() {
-	return 10 + Math.round(Math.random() * 10000) / 100;
 }
