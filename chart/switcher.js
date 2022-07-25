@@ -74,7 +74,8 @@ function createSimpleSwitcher(items, activeItem, activeItemChangedCallback) {
 }
 
 var intervals = ['1mo','3mo','6mo', '1y', '2y', '5y', 'max'];
-var switcherElement = createSimpleSwitcher(intervals, intervals[0], (item) => {
+// by default we are using '2y'
+var switcherElement = createSimpleSwitcher(intervals, intervals[4], (item) => {
     console.log('switch to ', item);
     sendwq('switcher', item); // e.id = 'switcher' and e.data = item
 });
