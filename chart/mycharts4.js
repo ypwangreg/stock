@@ -6,7 +6,7 @@ document.body.style.position = 'relative';
 var container = document.createElement('div');
 document.body.appendChild(container);
 
-var width = 1280;
+var width = 960;
 var height = 500;
 var chart = null;
 const v4= (LightweightCharts.version()[0]==='4')
@@ -43,6 +43,7 @@ function AddSmaLine(data, rgba, width=10) {
   colors.push(rgba);
   if (width < 100) smawid.push('MA'+width);
   else smawid.push('M'+width);
+  return smaData;
 }
 
 /*
@@ -104,7 +105,12 @@ function parseStock(err, data, vdata) {
     AddSmaLine(data,  'rgba(4, 111, 232, 1)');
     AddSmaLine(data,  'rgba(114, 11, 232, 1)', 50);
     AddSmaLine(data,  'rgba(0, 119, 132, 1)', 80);
-    AddSmaLine(data,  'rgba(255, 130, 0, 1)', 200);
+    sma200 = AddSmaLine(data,  'rgba(255, 130, 0, 1)', 200);
+
+    var markers = marker_HL200(data, sma200);
+    if (markers.length > 0) {
+        candleSeries.setMarkers(markers)
+    }
 
     var volumeSeries = chart.addHistogramSeries({
       color: '#C0C0C0',
