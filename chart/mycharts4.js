@@ -119,11 +119,18 @@ function parseStock(err, data, vdata) {
         type: 'volume',
       },
       //overlay: true,
-      priceScaleId: '',
+      priceScaleId: 'myvolume',
       scaleMargins: {
         top: 0.8,
         bottom: 0,
       },
+    });
+    // https://github.com/tradingview/lightweight-charts/issues/1130
+    chart.priceScale('myvolume').applyOptions({
+    scaleMargins: {
+        top: 0.8,
+        bottom: 0,
+    },
     });
     volumeSeries.setData(vdata);
     lines.push(volumeSeries);
