@@ -1,7 +1,20 @@
-// simple marker
+
+/*var markers = [{ time: req_data[req_data.length - 48].time, position: 'aboveBar', color: '#f68410', shape: 'circle', text: 'D' }];
+for (var i = 0; i < datesForMarkers.length; i++) {
+    if (i !== indexOfMinPrice) {
+        markers.push({ time: datesForMarkers[i].time, position: 'aboveBar', color: '#e91e63', shape: 'arrowDown', text: 'Sell @ ' + Math.floor(datesForMarkers[i].high - 1) });
+    } else {
+        markers.push({ time: datesForMarkers[i].time, position: 'belowBar', color: '#2196F3', shape: 'arrowUp', text: 'Buy @ ' + Math.floor(datesForMarkers[i].low + 1) });
+    }
+}
+
+candleSeries.setMarkers(markers);
+*/
+
+
 function marker_HL200(data, sma200, reset=0.05) {
     var markers = [];
-    console.log(data[199], sma200[0]);
+    //console.log(data[199], sma200[0]);
     let markhigh = false, marklow = false;
     let hithigh = 0, hitlow = 0;
     let closehigh = 0; closelow = 0;
@@ -14,7 +27,7 @@ function marker_HL200(data, sma200, reset=0.05) {
             markhigh = true;
             hithigh ++;
         }
-        if ( (s-l)/l > 0.25 && marklow == false) {
+        if ( (s-l)/l > 0.22 && marklow == false) {
             markers.push({ time: data[i].time, position: 'belowBar', color: '#2196F3', shape: 'arrowUp', text: 'Buy @ ' + l.toFixed(2)});
             marklow = true;
             hitlow ++;

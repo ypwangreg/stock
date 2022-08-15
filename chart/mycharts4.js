@@ -88,7 +88,8 @@ if (params !== undefined) {
 
 //getStock({ stock: 'APPL', startDate: '2022-07-01', endDate: '2022-07-15' }, 'historicaldata', function(err, data) {
 function parseStock(err, data, vdata) {
-    sendwq('stock', {stock, period});  
+    //sendwq('stock', {id:'broadcast', stock, period});   // unhandled ID
+    //sendwq('stock', {stock, period});                   // msg id is null
     chart.applyOptions({
     	watermark: {
 		visible: true,
@@ -145,7 +146,11 @@ function parseStock(err, data, vdata) {
         if(v4) { 
             if (param.seriesData.get(lines[x]))
                 setLegendText(param.seriesData.get(lines[x]).value, x);
-            else console.log('series get return Null?', x, lines[x]);
+            else {
+                // TODO: many warnings here somehow
+                // series get return Null? 4 SeriesApi {_internal__series: Series, _internal__dataUpdatesConsumer: ChartApi, _private__priceScaleApiProvider: ChartApi}
+                //console.log('series get return Null?', x, lines[x]);
+            }
         }
         else     setLegendText(param.seriesPrices.get(lines[x]), x);
       }
@@ -155,18 +160,24 @@ function parseStock(err, data, vdata) {
 getStock({ stock: stock, period: period}, 'period', parseStock);
 
 regwq('stock', function(msg) {
-    if ( msg.id != undefined && msg.id === 'switcher' ) {
-        console.log('about to switch');
-        if (chart) {
-          chart.remove();
-          createChart();
-          lines  = [];
-          colors = [];
-          smawid = [];
-          for (l of legends) { l.remove(); }
-          legends = [];
+    if ( msg.id != undefined ) {
+        if( msg.id === 'switcher' ) {
+          console.log('about to switch');
+          if (chart) {
+            chart.remove();
+            createChart();
+            lines  = [];
+            colors = [];
+            smawid = [];
+            for (l of legends) { l.remove(); }
+            legends = [];
+          }
+          getStock({ stock: stock, period: msg.data}, 'period', parseStock);
+        } else {
+            console.log('unhandled id', msg);
         }
-        getStock({ stock: stock, period: msg.data}, 'period', parseStock);
+    } else {
+        console.log('msg id is null}', msg);
     }
 
 });

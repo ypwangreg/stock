@@ -5,7 +5,7 @@ var wq = new Worker('worker.js');
 
 window.sendwq = function(id, data) {
   wq.postMessage([id,data]);
-  console.log('Message posted to worker => ', [id,data]);
+  //console.log('Message posted to worker => ', [id,data]);
 }
 
 var cb_map = new Map();
@@ -18,14 +18,14 @@ wq.onmessage = function(e) {
     id = e.data.id;
     resp = e.data.data;
 
-    console.log('Message received from worker <=', e);
+    //console.log('Message received from worker <=', e);
     if (cb_map.has(id)) {
         //cb_map.get(id)(resp); 
         // we could use queueMicrotask here to control the order of cb
         queueMicrotask(() => { cb_map.get(id)(resp); });
     }
     else {
-        console.log(' Cb is not registered by ', id, ' broadcasting.. ');
+        //console.log(' Cb is not registered by ', id, ' broadcasting.. ');
         for( let [ k, cb ] of cb_map ) {
             queueMicrotask(() => { cb(e.data); });
         }
