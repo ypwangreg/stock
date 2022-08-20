@@ -159,10 +159,7 @@ function parseStock(err, data, vdata) {
 
 getStock({ stock: stock, period: period}, 'period', parseStock);
 
-regwq('stock', function(msg) {
-    if ( msg.id != undefined ) {
-        if( msg.id === 'extra' ) {
-            if (msg.data == 'Psn') {
+function SaveScreenShot() {
                 // screen shot
                 var screenshot = chart.takeScreenshot();
                 //  We could pop up a window and show the image
@@ -180,6 +177,13 @@ regwq('stock', function(msg) {
                 link.setAttribute('download', stock+period+'.png');
                 link.setAttribute('href', screenshot.toDataURL("image/png").replace("image/png", "image/octet-stream"));
                 link.click();
+}
+
+regwq('stock', function(msg) {
+    if ( msg.id != undefined ) {
+        if( msg.id === 'extra' ) {
+            if (msg.data == 'Psn') {
+                SaveScreenShot();
             }
         }
         else if( msg.id === 'intervals' ) {
@@ -196,6 +200,9 @@ regwq('stock', function(msg) {
           period = msg.data;
           getStock({ stock: stock, period: msg.data}, 'period', parseStock);
         } else {
+            if (msg.id === 'keycut' && msg.data === 'P') {
+                SaveScreenShot();
+            }
             console.log('unhandled id', msg);
         }
     } else {
