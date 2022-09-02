@@ -23,6 +23,8 @@ function createChart() {
 }
 createChart();
 
+LightweightCharts.sendmq = window.sendmq;
+
 //let p = {timeFrom: {day: 1, month: 1, year:2022}, timeTo: {day: 20, month: 1, year: 2022}}
 //var data2 = generateBarsData(p);
 //console.log(data2);
@@ -159,9 +161,8 @@ function parseStock(err, data, vdata) {
 
 getStock({ stock: stock, period: period}, 'period', parseStock);
 
-function SaveScreenShot() {
+function SaveScreenShot(canvas=undefined, file=undefined) {
                 // screen shot
-                var screenshot = chart.takeScreenshot();
                 //  We could pop up a window and show the image
                 //	screenshot.style.position = 'absolute';
 	            //    screenshot.style.top = '260px';
@@ -174,11 +175,86 @@ function SaveScreenShot() {
                     link.id = 'link';
                     container.parentNode.appendChild(link);
                 }
-                link.setAttribute('download', stock+period+'.png');
-                link.setAttribute('href', screenshot.toDataURL("image/png").replace("image/png", "image/octet-stream"));
+                if (file == undefined) file=stock+period+'.png';
+                if (canvas == undefined) canvas = chart.takeScreenshot();
+                link.setAttribute('download', file);
+                link.setAttribute('href', canvas.toDataURL("image/png").replace("image/png", "image/octet-stream"));
                 link.click();
 }
 
+function testcl3(ctx) {
+// Point of transform origin
+ctx.arc(0, 0, 5, 0, 2 * Math.PI);
+ctx.fillStyle = 'blue';
+ctx.fill();
+
+// Non-rotated rectangle
+ctx.fillStyle = 'gray';
+ctx.fillRect(100, 0, 80, 20);
+
+// Rotated rectangle
+ctx.rotate(45 * Math.PI / 180);
+ctx.fillStyle = 'red';
+ctx.fillRect(100, 0, 80, 20);
+
+// Reset transformation matrix to the identity matrix
+ctx.setTransform(1, 0, 0, 1, 0, 0);
+}
+
+// Canvas Layer 3
+let cl2=undefined;
+let cl3=undefined;
+let cl3ctx=undefined;
+let cl3_cnt = 0;
+let last_x = 0, last_y = 0;
+function drawcl3(msg) {
+    if (cl3 === undefined) {
+       cls = document.getElementsByTagName('canvas');
+       cl2 = cls[1];
+       cl2.style.zIndex = 10; // the top cross-hair layer
+       // now get the src canvas
+       cl3 = document.createElement('canvas');
+       cl3ctx = cl3.getContext('2d');
+       cl3.width = cl2.width;
+       cl3.height = cl2.height;
+       cl3.style.zIndex = 2;
+       cl3.style.position = 'absolute';
+       cl3.style.left = '0px';
+       cl3.style.right = '0px';
+       cl3.id = 'cl3';
+       //cl3 = new DOMParser().parseFromString(cl3str, "text/xml");
+       console.log(cl3, cl3ctx);
+       cl2.parentElement.appendChild(cl3);
+       //cl3ctx.rotate(-Math.PI/4);
+       // Matrix transformation + B
+       cl3ctx.translate(cl3.width/2, cl3.height/2);
+       cl3ctx.rotate(-Math.PI / 2);
+       //cl3ctx.scale(cl3.height/cl3.width, cl3.height/cl3.width);
+       cl3ctx.scale(cl3.height/cl3.width, 1);
+       cl3ctx.translate(-cl3.width/2, -20 /* -cl3.height/2*/);
+       //testcl3(cl3ctx);
+       cl3ctx.fillStyle = 'gray';
+    }
+    let p = msg.data.split(' ');
+    //'XL-8 YT440 W5 H32'
+    x = parseInt(p[0].substr(2));
+    y = parseInt(p[1].substr(2)); // with B
+    w = parseInt(p[2].substr(1));
+    h = parseInt(p[3].substr(1));
+    if (++cl3_cnt % 10 == 0)console.log(cl3_cnt, "cl3 draw: ", x, y, w, h);
+    if (last_x > 0 && x < 0){
+        console.log("clear Canvas", last_x, x);
+        cl3ctx.save();
+        // Use the identity matrix while clearing the canvas
+        cl3ctx.setTransform(1, 0, 0, 1, 0, 0);
+        cl3ctx.clearRect(0,0,cl3.width, cl3.height);
+        cl3ctx.restore();
+    }
+    cl3ctx.fillRect(x,y,w,h);
+    last_x = x, last_y = y;
+}
+
+let ch_cnt = 0;
 regwq('stock', function(msg) {
     if ( msg.id != undefined ) {
         if( msg.id === 'extra' ) {
@@ -203,6 +279,11 @@ regwq('stock', function(msg) {
             if (msg.id === 'keycut' && msg.data === 'P') {
                 SaveScreenShot();
             }
+            if (msg.id === 'keycut' && msg.data === 'Q') {
+                SaveScreenShot(cl3, 'cl3.png');
+            }
+            if (msg.id == 'CH' && ch_cnt++ %30 != 0) return;
+            if (msg.id == 'HG') drawcl3(msg);
             console.log('unhandled id', msg);
         }
     } else {
