@@ -1,7 +1,7 @@
 from http.server import SimpleHTTPRequestHandler, HTTPServer
 import yfinance as yf
 from trade import saved, isaved
-import os
+import os, time
 
 #tsla = yf.Ticker("TSLA")
 #data = tsla.history(period="1mo")
@@ -10,6 +10,18 @@ import os
 PORT = 8080
 class MyProxy(SimpleHTTPRequestHandler):
     #BaseHTTPRequestHandler
+    def do_HEAD(self):
+        self.send_response(200)
+        sp=self.path.split('?')[0]
+        if os.path.isfile("."+sp):
+            datestr = time.ctime(os.path.getmtime("."+sp))
+            self.send_header("Last-Modified", datestr);
+            if sp[-3:] == ".js":    self.send_header("Content-Type", "text/javascript");
+            elif sp[-4:] == ".css": self.send_header("Content-Type", "text/css");
+            elif sp[-5:] == ".html":self.send_header("Content-Type", "text/html");
+            else: self.send_header("Content-Type", "text/html"); 
+        self.end_headers()
+         
     def do_GET(self):
         print(self.path)
         #url=self.path[1:]
