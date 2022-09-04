@@ -207,6 +207,7 @@ let cl3=undefined;
 let cl3ctx=undefined;
 let cl3_cnt = 0;
 let last_x = 0, last_y = 0;
+let cl3Rect = [];
 function drawcl3(msg) {
     if (cl3 === undefined) {
        cls = document.getElementsByTagName('canvas');
@@ -215,6 +216,7 @@ function drawcl3(msg) {
        // now get the src canvas
        cl3 = document.createElement('canvas');
        cl3ctx = cl3.getContext('2d');
+       batchDrawRect(cl3ctx, cl3Rect); // batch draw
        cl3.width = cl2.width;
        cl3.height = cl2.height;
        cl3.style.zIndex = 2;
@@ -244,15 +246,28 @@ function drawcl3(msg) {
     if (++cl3_cnt % 10 == 0)console.log(cl3_cnt, "cl3 draw: ", x, y, w, h);
     if (last_x > 0 && x < 0){
         console.log("clear Canvas", last_x, x);
+        cl3Rect.length = 0;
         cl3ctx.save();
         // Use the identity matrix while clearing the canvas
         cl3ctx.setTransform(1, 0, 0, 1, 0, 0);
         cl3ctx.clearRect(0,0,cl3.width, cl3.height);
         cl3ctx.restore();
     }
-    cl3ctx.fillRect(x,y,w,h);
+    //cl3ctx.fillRect(x,y,w,h);
+    cl3Rect.push([x,y,w,h]); 
     last_x = x, last_y = y;
 }
+
+function batchDrawRect(ctx, rects) {
+    window.setInterval(function(){
+        //console.log("batchDrawRect", ctx, rects);
+        while(ctx && rects.length > 0 ) {
+            const [x,y,w,h] = rects.shift(); 
+            ctx.fillRect(x,y,w,h);
+        }
+    }, 1000/25 ); // 25 times per second
+}
+
 
 let ch_cnt = 0;
 regwq('stock', function(msg) {
@@ -283,8 +298,8 @@ regwq('stock', function(msg) {
                 SaveScreenShot(cl3, 'cl3.png');
             }
             if (msg.id == 'CH' && ch_cnt++ %30 != 0) return;
-            if (msg.id == 'HG') drawcl3(msg);
-            console.log('unhandled id', msg);
+            else if (msg.id == 'HG') drawcl3(msg);
+            else console.log('unhandled id', msg);
         }
     } else {
         console.log('msg id is null}', msg);
