@@ -1,0 +1,2 @@
+If there is no drawing on vertical direction, make sure that you are not using 'Large Text' on top-right task menu!
+Somehow, when 'large text' is enabled, it will affect the 'scale' so the transform-scale will result in out-of-screen!

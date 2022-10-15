@@ -1,0 +1,44 @@
+ 8969         _private__drawCrosshairLabel(ctx, pixelRatio) {
+ 8970             if (this._private__size === null || this._private__priceScale === null) {
+ 8971                 return;
+ 8972             }
+ 8973             ctx.save();
+ 8974             const size = this._private__size;
+ 8975             const model = this._private__pane._internal_chart()._internal_model();
+ 8976             const views = []; // array of arrays
+ 8977             const pane = this._private__pane._internal_state();
+ 8978             const v = model._internal_crosshairSource()._internal_priceAxisViews(pane, this._private__priceScale);
+ 8979             if (v.length) {
+ 8980                 views.push(v);
+ 8981             }
+ 8982             const ro = this._internal_rendererOptions();
+ 8983             const align = this._private__isLeft ? 'right' : 'left';
+ 8984             views.forEach((arr) => {
+ 8985                 arr.forEach((view) => {
+ 8986                     ctx.save();
+ 8987                     console.log("drawCrosshairLabel", ro, view);
+
+
+ 7331         _internal_setAndSaveCurrentPosition(x, y, pane) {
+ 7332             this._private__crosshair._internal_saveOriginCoord(x, y);
+ 7333             let price = NaN;
+ 7334             let index = this._private__timeScale._internal_coordinateToIndex(x);
+ 7335             const visibleBars = this._private__timeScale._internal_visibleStrictRange();
+ 7336             if (visibleBars !== null) {
+ 7337                 index = Math.min(Math.max(visibleBars._internal_left(), index), visibleBars._internal_right());
+ 7338             }
+ 7339             const priceScale = pane._internal_defaultPriceScale();
+ 7340             const firstValue = priceScale._internal_firstValue();
+ 7341             if (firstValue !== null) {
+ 7342                 price = priceScale._internal_coordinateToPrice(y, firstValue);
+ 7343             }
+ 7344             price = this._private__magnet._internal_align(price, index, pane);
+ 7345             console.log('SetAndSavePos', x, y, index, price, pane);
+
+x/652, y/466, index/473, price/217.60 ==> masterData.time 2022-08-11
+
+ SetAndSavePos 652 466 473 217.59268357202507 Pane {_private__dataSources: Array(6), _private__overlaySourcesByScaleId: Map(1), _private__height: 472, _private__width: 898, _private__stretchFactor: 2000, …}
+masterData[473].time
+{year: 2022, month: 8, day: 11}
+
+Added a filter on above 7345, print every 20 times. otherwise it is too many

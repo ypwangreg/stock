@@ -7110,6 +7110,7 @@
             this._private__panes[0]._internal_setStretchFactor(DEFAULT_STRETCH_FACTOR * 2);
             this._private__backgroundTopColor = this._private__getBackgroundColor(0 /* Top */);
             this._private__backgroundBottomColor = this._private__getBackgroundColor(1 /* Bottom */);
+            this.dbgcnt = 0;
         }
         _internal_fullUpdate() {
             this._private__invalidate(new InvalidateMask(3 /* Full */));
@@ -7342,6 +7343,7 @@
                 price = priceScale._internal_coordinateToPrice(y, firstValue);
             }
             price = this._private__magnet._internal_align(price, index, pane);
+            if(this.dbgcnt++ % 20 == 0)console.log('SetAndSavePos', x, y, index, price, pane);
             this._private__crosshair._internal_setPosition(index, price, pane);
             this._internal_cursorUpdate();
             this._private__crosshairMoved._internal_fire(this._private__crosshair._internal_appliedIndex(), { x, y });
@@ -8983,6 +8985,7 @@
             views.forEach((arr) => {
                 arr.forEach((view) => {
                     ctx.save();
+                    console.log("drawCrosshairLabel", ro, view);
                     view._internal_renderer(ensureNotNull(this._private__priceScale))._internal_draw(ctx, ro, this._private__widthCache, size._internal_w, align, pixelRatio);
                     ctx.restore();
                 });

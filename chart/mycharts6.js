@@ -6,22 +6,44 @@ document.body.style.position = 'relative';
 var container = document.createElement('div');
 document.body.appendChild(container);
 
-var width = 960;
-var height = 500;
+var width =  $(window).width() - 20; //960;
+var height = $(window).height() - 50; //500;
 var chart = null;
 const v4= (LightweightCharts.version()[0]==='4')
 
 function createChart() {
  chart = LightweightCharts.createChart(container, {
+     rightPriceScale: {
+         visible: true,
+     },
+     leftPriceScale: {
+         visible: false,
+     },
 	width: width,
 	height: height,
-  crosshair: {
+     crosshair: {
 		mode: LightweightCharts.CrosshairMode.Normal,
+         vertLine: {
+            //width: 4,
+            // color: '#C3BCDB44',
+            // style: LightweightCharts.LineStyle.Solid,
+            // labelBackgroundColor: '#9B7DFF',
+         },
 	},
   });
  return chart;
 }
 createChart();
+
+window.addEventListener('resize', function(event) {
+    width =  $(window).width() - 20; //960;
+    height = $(window).height() - 50; //500;
+    console.log("Reisze: ", width, height);
+    chart.applyOptions({
+        width:width,
+        height:height,
+    });
+}, true);
 
 LightweightCharts.sendmq = window.sendmq;
 
@@ -65,7 +87,7 @@ function setLegendText(priceValue, x) {
         let unit='', div = 100;
         if (priceValue > 1000000 )   { unit='M'; div *= 1000000;  }
         else if (priceValue > 1000)  { unit='K'; div *= 1000; }
-        else  /* priceValue < 1000 */{ unit='';  div *=1; } 
+        else  /* priceValue < 1000 */{ unit='';  div *=1; }
         val = (Math.round(priceValue * 100) / div).toFixed(2) + unit;
 	}
     //for (var x = 0; x < lines.length; x++) {
@@ -87,9 +109,22 @@ if (params !== undefined) {
     console.log('[',stock,',',period,']');
 }
 
-
+let masterData = undefined; // save the global dataset
 //getStock({ stock: 'APPL', startDate: '2022-07-01', endDate: '2022-07-15' }, 'historicaldata', function(err, data) {
 function parseStock(err, data, vdata) {
+    masterData = data;
+
+    /*chart.applyOptions({
+        layout: {
+            background: { color: '#222' },
+            textColor: '#DDD',
+        },
+        grid: {
+            vertLines: { color: '#444' },
+            horzLines: { color: '#444' },
+        },
+    });*/
+
     //sendwq('stock', {id:'broadcast', stock, period});   // unhandled ID
     //sendwq('stock', {stock, period});                   // msg id is null
     chart.applyOptions({
@@ -102,9 +137,65 @@ function parseStock(err, data, vdata) {
 		text: stock,
 	},});
     //console.log(data);
+
+    // https://tradingview.github.io/lightweight-charts/tutorials/customization/second-series
+    // Convert the candlestick data for use with a line series
+
+    const lineData = data.map(datapoint => ({
+    time: datapoint.time,
+    value: (datapoint.close + datapoint.open) / 2,
+    }));
+
+    // https://tradingview.github.io/lightweight-charts/tutorials/customization/data-points
+    // Generate sample data to use within a candlestick series
+    let hl52w = [0,1000];  // high/low of last 52 week
+    let last52w = [];  //save last 200days
+    const candleStickData = data.map(datapoint => {
+        let close = datapoint.close;
+        let normal = false;
+        last52w.push(close);
+        if (close > hl52w[0] ) {hl52w[0] = close; console.log("new High:", close, datapoint.time);}
+        else if (close < hl52w[1]) {hl52w[1] = close; console.log("new Low:", close, datapoint.time);}
+        else normal = true;
+
+        // if close is within 5% of high or low, consider it as abnormal
+        if (close >  hl52w[0]*0.95 || close < hl52w[1]*1.05) normal = false;
+
+        if (last52w.length > 200) {
+            let out = last52w.shift();
+            if (out === hl52w[0]) { hl52w[0] = Math.max(...last52w);}
+            else if (out === hl52w[1]) { hl52w[1] = Math.min(...last52w);}
+        }
+        // map function is changing the color for the individual
+        // candlestick points that close above 350 (for TSLA) datapoint.close < 350
+        if (last52w.length < 199 || normal ) { return datapoint; }
+    // we are adding 'color' and 'wickColor' properties to the datapoint.
+    // Using spread syntax: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Spread_syntax#spread_in_object_literals
+    return { ...datapoint, color: 'orange', wickColor: 'orange' };
+    });
+
+
+    // Add an area series to the chart,
+    // Adding this before we add the candlestick chart
+    // so that it will appear beneath the candlesticks
+    const areaSeries = chart.addAreaSeries({
+    lastValueVisible: false, // hide the last value marker for this series
+    crosshairMarkerVisible: false, // hide the crosshair marker for this series
+    lineColor: 'transparent', // hide the line
+    topColor: 'rgba(11, 33, 56,0.3)',
+    bottomColor: 'rgba(56, 33, 110, 0.1)',
+});
+    // Set the data for the Area Series
+    areaSeries.setData(lineData);
+
+
     //var data = generateBarsData();
-    var candleSeries = chart.addCandlestickSeries();
-    candleSeries.setData(data);
+    var candleSeries = chart.addCandlestickSeries({
+        //priceScaleId: 'left',
+    });
+    //candleSeries.setData(data);
+    candleSeries.setData(candleStickData);
+
     AddSmaLine(data,  'rgba(4, 111, 232, 1)');
     AddSmaLine(data,  'rgba(114, 11, 232, 1)', 50);
     AddSmaLine(data,  'rgba(0, 119, 132, 1)', 80);
@@ -135,6 +226,14 @@ function parseStock(err, data, vdata) {
         bottom: 0,
     },
     });
+    // https://tradingview.github.io/lightweight-charts/docs/api/interfaces/PriceScaleOptions
+    // { bottom: 0.1, top: 0.2 }
+    chart.priceScale('right').applyOptions({
+    scaleMargins: {
+        top: 0.2,
+        bottom: 0.2,
+    },
+    });
     volumeSeries.setData(vdata);
     lines.push(volumeSeries);
     colors.push('#404040');
@@ -145,7 +244,7 @@ function parseStock(err, data, vdata) {
     chart.subscribeCrosshairMove((param) => {
         //console.log('crosshair move', param);
       for (var x = 0; x < lines.length; x++) {
-        if(v4) { 
+        if(v4) {
             if (param.seriesData.get(lines[x]))
                 setLegendText(param.seriesData.get(lines[x]).value, x);
             else {
@@ -208,6 +307,19 @@ let cl3ctx=undefined;
 let cl3_cnt = 0;
 let last_x = 0, last_y = 0;
 let cl3Rect = [];
+// the msg is from Volume or HistogramSeries bar paint instruction from light-charts
+// basically, we want to recontruct to make it vertical attached to the graph.
+// we create a new layer and put it just below the cross-hair but above other layer.
+// we need to do the transform as the original instruction was painted on normal.
+// so first, we move to the middle and then conter-clock-wise rotate 90 degree.
+// if we don't move, then we would have rotate to the outside.
+// after that, we need to compress based on aspect ratio. as normally we have 16:9, more width than height.
+// and then we need to right-aligned, so we need to further move up or down based on the aspect ratio.
+// if height/width > 0.5 then we need to move up (negative, or after transform, move to left)
+// if height/width < 0.5, then we need to move down(posotive, or after transform, move to right).
+// we didn't get it right at the beginning but finally we figure out it just (width/2 - height)
+// when we resize the window, we need to first applyOptions to the chart with will cause a redraw()
+// then we need to detect that and reset the transform and do the correct transformation again.
 function drawcl3(msg) {
     if (cl3 === undefined) {
        cls = document.getElementsByTagName('canvas');
@@ -216,7 +328,7 @@ function drawcl3(msg) {
        // now get the src canvas
        cl3 = document.createElement('canvas');
        cl3ctx = cl3.getContext('2d');
-       batchDrawRect(cl3ctx, cl3Rect); 
+       batchDrawRect(cl3ctx, cl3Rect);
        cl3.width = cl2.width;
        cl3.height = cl2.height;
        cl3.style.zIndex = 2;
@@ -231,11 +343,25 @@ function drawcl3(msg) {
        // Matrix transformation + B
        cl3ctx.translate(cl3.width/2, cl3.height/2);
        cl3ctx.rotate(-Math.PI / 2);
-       //cl3ctx.scale(cl3.height/cl3.width, cl3.height/cl3.width);
        cl3ctx.scale(cl3.height/cl3.width, 1);
-       cl3ctx.translate(-cl3.width/2, -20 /* -cl3.height/2*/);
+       cl3ctx.translate(-cl3.width/2, cl3.width/2 - cl3.height/* -cl3.height/2*/);
+       // 550/900 -> 0.6 , -100
+        // 550/1280 -> 0.43, 90
+        // fomular = (0.5 - cl3.height/cl3.width)*cl3.width => cl3.width/2 - cl3.height
        //testcl3(cl3ctx);
        cl3ctx.fillStyle = 'gray';
+    } else {
+        if (cl2.width != cl3.width || cl2.height != cl3.height) {
+            // when resize, redo the canvas transform
+            cl3.width = cl2.width;
+            cl3.height = cl2.height;
+            cl3ctx.resetTransform();
+            cl3ctx.translate(cl3.width/2, cl3.height/2);
+            cl3ctx.rotate(-Math.PI / 2);
+            cl3ctx.scale(cl3.height/cl3.width, 1);
+            cl3ctx.translate(-cl3.width/2, cl3.width/2 - cl3.height /* -cl3.height/2*/);
+            cl3ctx.fillStyle = 'gray';
+        }
     }
     let p = msg.data.split(' ');
     //'XL-8 YT440 W5 H32'
@@ -254,7 +380,7 @@ function drawcl3(msg) {
         cl3ctx.restore();
     }
     //cl3ctx.fillRect(x,y,w,h);
-    cl3Rect.push([x,y,w,h]); 
+    cl3Rect.push([x,y,w,h]);
     last_x = x, last_y = y;
 }
 
@@ -262,7 +388,7 @@ function batchDrawRect(ctx, rects) {
     window.setInterval(function(){
         //console.log("batchDrawRect", ctx, rects);
         while(ctx && rects.length > 0 ) {
-            const [x,y,w,h] = rects.shift(); 
+            const [x,y,w,h] = rects.shift();
             ctx.fillRect(x,y,w,h);
         }
     }, 1000/25 ); // 25 times per second
@@ -319,7 +445,7 @@ function createLegend() {
         container.appendChild(legend);
         legend.style.display = 'block';
         legend.style.left = 3 + 'px';
-        legend.style.top = 30+(3+x*20) + 'px';   //vertical grows + 
+        legend.style.top = 30+(3+x*20) + 'px';   //vertical grows +
         legends.push(legend);
     }
 }
@@ -345,7 +471,7 @@ function calculateSMA(data, count){
 //         period.timeTo : { day: 1, month: 1, year: 2019 };
 function generateBarsData(period) {
 	var res = [];
-	
+
     //controlPoints.push({ index: res.length - 1, price: getRandomPrice() * dataMultiplier });
 	var controlPoints = generateControlPoints(res, period);
 	for (var i = 0; i < controlPoints.length - 1; i++) {
