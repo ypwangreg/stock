@@ -307,6 +307,15 @@ let cl3ctx=undefined;
 let cl3_cnt = 0;
 let last_x = 0, last_y = 0;
 let cl3Rect = [];
+let LAR = 1.0;  // same ratio for largeAspectRatio and largeScaleRatio, for Scale or Large Text Desktop Display setting
+let TAR = 1.0;  // we need to set transformAspectRatio as well
+let TAR2 = 1.0;
+console.log("Display Scale DPI ", window.devicePixelRatio);
+if (window.devicePixelRatio == 1.25) {
+    LAR = 0.8;
+    TAR = 0.75;
+    TAR2 = 1.5;
+}
 // the msg is from Volume or HistogramSeries bar paint instruction from light-charts
 // basically, we want to recontruct to make it vertical attached to the graph.
 // we create a new layer and put it just below the cross-hair but above other layer.
@@ -343,8 +352,8 @@ function drawcl3(msg) {
        // Matrix transformation + B
        cl3ctx.translate(cl3.width/2, cl3.height/2);
        cl3ctx.rotate(-Math.PI / 2);
-       cl3ctx.scale(cl3.height/cl3.width, 1);
-       cl3ctx.translate(-cl3.width/2, cl3.width/2 - cl3.height/* -cl3.height/2*/);
+       cl3ctx.scale(cl3.height/cl3.width*LAR, LAR);  // for large text or scale@125%, we need to scale down. => for both. aspect ratio and scale. 
+       cl3ctx.translate(-cl3.width/2*TAR, (cl3.width/2 - cl3.height)*TAR2/* -cl3.height/2*/);
        // 550/900 -> 0.6 , -100
         // 550/1280 -> 0.43, 90
         // fomular = (0.5 - cl3.height/cl3.width)*cl3.width => cl3.width/2 - cl3.height
@@ -358,8 +367,8 @@ function drawcl3(msg) {
             cl3ctx.resetTransform();
             cl3ctx.translate(cl3.width/2, cl3.height/2);
             cl3ctx.rotate(-Math.PI / 2);
-            cl3ctx.scale(cl3.height/cl3.width, 1);
-            cl3ctx.translate(-cl3.width/2, cl3.width/2 - cl3.height /* -cl3.height/2*/);
+            cl3ctx.scale(cl3.height/cl3.width*LAR, LAR);
+            cl3ctx.translate(-cl3.width/2*TAR, (cl3.width/2 - cl3.height)*TAR2 /* -cl3.height/2*/);
             cl3ctx.fillStyle = 'gray';
         }
     }
@@ -370,7 +379,7 @@ function drawcl3(msg) {
     w = parseInt(p[2].substr(1));
     h = parseInt(p[3].substr(1));
     if (++cl3_cnt % 10 == 0)console.log(cl3_cnt, "cl3 draw: ", x, y, w, h);
-    if (last_x > 0 && x < 0){
+    if (last_x > 0 && (x < 0 || last_x > x )){
         console.log("clear Canvas", last_x, x);
         cl3Rect.length = 0; // cl3Rect = [] does not work.
         cl3ctx.save();
