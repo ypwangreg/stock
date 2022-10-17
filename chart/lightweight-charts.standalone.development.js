@@ -7325,7 +7325,7 @@
             this._private__timeScale._internal_endScroll();
             this._internal_lightUpdate();
             this._private__initialTimeScrollPos = null;
-        }
+        } 
         _internal_serieses() {
             return this._private__serieses;
         }
@@ -7343,7 +7343,10 @@
                 price = priceScale._internal_coordinateToPrice(y, firstValue);
             }
             price = this._private__magnet._internal_align(price, index, pane);
-            if(this.dbgcnt++ % 20 == 0)console.log('SetAndSavePos', x, y, index, price, pane);
+            if(this.dbgcnt++ % 100 == 0) {
+                console.log('ChartModel SetAndSavePos', x, y, index, price, /*pane*/);
+            }
+            sendmq('SSCP', [x,y,index,price]);
             this._private__crosshair._internal_setPosition(index, price, pane);
             this._internal_cursorUpdate();
             this._private__crosshairMoved._internal_fire(this._private__crosshair._internal_appliedIndex(), { x, y });
@@ -8591,6 +8594,7 @@
                 _internal_treatVertTouchDragAsPageScroll: () => false,
                 _internal_treatHorzTouchDragAsPageScroll: () => true,
             });
+            this.dbgcnt = 0;
         }
         _internal_destroy() {
             this._private__mouseEventHandler._internal_destroy();
@@ -8985,7 +8989,7 @@
             views.forEach((arr) => {
                 arr.forEach((view) => {
                     ctx.save();
-                    console.log("drawCrosshairLabel", ro, view);
+                    if(this.dbgcnt++ % 20 == 0)console.log(" PriceAxisWidget drawCrosshairLabel", ro, view);
                     view._internal_renderer(ensureNotNull(this._private__priceScale))._internal_draw(ctx, ro, this._private__widthCache, size._internal_w, align, pixelRatio);
                     ctx.restore();
                 });

@@ -394,6 +394,7 @@ function drawcl3(msg) {
 }
 
 function batchDrawRect(ctx, rects) {
+    /*
     window.setInterval(function(){
         //console.log("batchDrawRect", ctx, rects);
         while(ctx && rects.length > 0 ) {
@@ -401,6 +402,29 @@ function batchDrawRect(ctx, rects) {
             ctx.fillRect(x,y,w,h);
         }
     }, 1000/25 ); // 25 times per second
+    */
+    function drawBar(timestamp) {
+        while(ctx && rects.length > 0) {
+            const [x,y,w,h] = rects.shift();
+            ctx.fillRect(x,y,w,h);
+        }
+        requestAnimationFrame(drawBar);
+    }
+    requestAnimationFrame(drawBar);
+}
+
+let sscp_last= [];
+function sscp(msg) {
+   sscp_last[0] = performance.now();
+   sscp_last[1] = msg.data;
+   requestAnimationFrame(drawSSCP);
+}
+function drawSSCP(timestamp) {
+   if(sscp_last[0] != 0 && timestamp - sscp_last[0] > 200) {
+       console.log('drawSSCP', sscp_last[1]);
+       sscp_last[0] = 0;
+   }
+   requestAnimationFrame(drawSSCP);
 }
 
 
@@ -434,6 +458,7 @@ regwq('stock', function(msg) {
             }
             if (msg.id == 'CH' && ch_cnt++ %30 != 0) return;
             else if (msg.id == 'HG') drawcl3(msg);
+            else if (msg.id == 'SSCP') sscp(msg);
             else console.log('unhandled id', msg);
         }
     } else {
